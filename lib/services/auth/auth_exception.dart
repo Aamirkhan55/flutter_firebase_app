@@ -15,6 +15,3 @@ class GenericAuthException implements Exception {}
 
 class UserNotLogInAuthException implements Exception {}
 
-// Test Exception
-
-class NotInitializedException implements Exception {}
