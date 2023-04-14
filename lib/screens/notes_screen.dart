@@ -1,10 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_app/services/auth/auth_services.dart';
+import 'package:flutter_firebase_app/services/crud/notes_services.dart';
 import '../constants/routes.dart';
 import '../enums/manu_action.dart';
 
-class NoteScreen extends StatelessWidget {
+class NoteScreen extends StatefulWidget {
   const NoteScreen({super.key});
+
+  @override
+  State<NoteScreen> createState() => _NoteScreenState();
+}
+
+class _NoteScreenState extends State<NoteScreen> {
+  late final NotesServices _notesServices; 
+  String get userEmail => AuthServices.firebase().currentUser!.email!;
+
+  @override
+  void initState() {
+    _notesServices = NotesServices();
+    _notesServices.openDb();
+    super.initState();
+    }
+  
+  @override
+  void dispose() {
+     _notesServices.closeDb();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
