@@ -11,14 +11,20 @@ class NotesServices {
   Database? _db;
 
   List<DatabaseNotes> _notes = [];
+ 
+  static final NotesServices _shared = NotesServices._sharedInstance();
+  NotesServices._sharedInstance();
+  factory NotesServices() => _shared;
 
   final _notesStreamController = StreamController<List<DatabaseNotes>>.broadcast();
+
+  Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
 
   Future<void> _ensureDbIsOpen() async{
     try {
       await openDb();
     } on DatabaseAlreadyOpenException {
-      
+       'Please Sure Db Is Open';
     }
   }
 

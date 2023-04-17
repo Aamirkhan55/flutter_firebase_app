@@ -53,9 +53,25 @@ class _NoteScreenState extends State<NoteScreen> {
           })
         ],
       ),
-      body: Column(
-        children: [],
-      ),
+      body: FutureBuilder(
+        future: _notesServices.getOrCreateUser(email: userEmail),
+        builder: (context , snapshot) {
+         switch(snapshot.connectionState) {
+           case ConnectionState.done:
+             return StreamBuilder(
+              stream: _notesServices.allNotes,
+              builder: (context, snapshot) {
+               switch (snapshot.connectionState) {
+                 case ConnectionState.waiting:
+                    return const Text('Waiting for all notes');
+                  default:
+                     return const CircularProgressIndicator();
+               } 
+              } );
+             default :
+              return const CircularProgressIndicator();
+         }
+      })
     );
   }
 }
