@@ -18,7 +18,6 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   void initState() {
     _notesServices = NotesServices();
-    _notesServices.openDb();
     super.initState();
     }
   
