@@ -26,20 +26,75 @@ class _NewNotesScreenState extends State<NewNotesScreen> {
     return await _notesServices.createNote(owner: owner);
   }
 
+  void _deleteNoteIfTextIsEmpty() {
+    final note = _note;
+    if (_textController.text.isEmpty && note != null) {
+      _notesServices.deletNote(id: note.id);
+    }
+  }
+
+  void _saveNoteIfTextNotEmpty() async{
+    final note = _note;
+    final text = _textController.text;
+    if (note != null && text.isNotEmpty) {
+      await _notesServices.updateNotes(note: note, text: text);
+    }
+  }
+
+  void _textControllerListener() async{
+    final note = _note;
+    if (note == null) {
+      return;
+    } 
+    final text = _textController.text;
+    await _notesServices.updateNotes(note: note, text: text);
+  }
+
+  void _setupTextControllerListener() {
+    _textController.removeListener(_textControllerListener);
+    _textController.addListener(_textControllerListener);
+  }
+
   @override
   void initState() {
-    _textController.text;
+    _notesServices = NotesServices();
+    _textController = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _deleteNoteIfTextIsEmpty();
+    _saveNoteIfTextNotEmpty();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold();
+    return  Scaffold(
+      appBar:   AppBar(
+        title: const Text('New Notes'),
+      ),
+      body: FutureBuilder(
+        future: createNewNotes(),
+        builder: (context, snapshot){
+          switch (snapshot.connectionState) {
+           case ConnectionState.done:
+             _note = snapshot.data as DatabaseNotes;
+             _setupTextControllerListener();
+              return TextField(
+                controller: _textController,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                decoration: const InputDecoration(
+                  hintText: 'Start Yor Text Here....'
+                ),
+              );
+             default :
+               return const CircularProgressIndicator();
+          }
+         }),
+    );
   }
 }
