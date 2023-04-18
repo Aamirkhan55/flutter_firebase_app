@@ -18,7 +18,7 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   void initState() {
     _notesServices = NotesServices();
-    super.initState();
+    super.initState(); 
     }
   
   @override
@@ -63,6 +63,7 @@ class _NoteScreenState extends State<NoteScreen> {
               builder: (context, snapshot) {
                switch (snapshot.connectionState) {
                  case ConnectionState.waiting:
+                 case ConnectionState.active:
                     return const Text('Waiting for all notes');
                   default:
                      return const CircularProgressIndicator();
