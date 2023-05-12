@@ -12,68 +12,78 @@ class NoteScreen extends StatefulWidget {
 }
 
 class _NoteScreenState extends State<NoteScreen> {
-  late final NotesServices _notesServices; 
+  late final NotesServices _notesServices;
   String get userEmail => AuthServices.firebase().currentUser!.email!;
 
   @override
   void initState() {
     _notesServices = NotesServices();
-    super.initState(); 
-    }
-  
-  @override
-  void dispose() {
-     _notesServices.closeDb();
-    super.dispose();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('NoteScreen'),
-        actions: [
-          PopupMenuButton<MenuAction>(onSelected: (value) async {
-            switch (value) {
-              case MenuAction.logout:
-                final shouldLogOut = await showLogOut(context);
-                if (shouldLogOut) {
-                   AuthServices.firebase().logOut();
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                          signInRoute, (route) => false);
-                }
-            }
-          }, itemBuilder: (context) {
-            return [
-              const PopupMenuItem(
-                value: MenuAction.logout,
-                child: Text('LogOut'),
-              )
-            ];
-          })
-        ],
-      ),
-      body: FutureBuilder(
-        future: _notesServices.getOrCreateUser(email: userEmail),
-        builder: (context , snapshot) {
-         switch(snapshot.connectionState) {
-           case ConnectionState.done:
-             return StreamBuilder(
-              stream: _notesServices.allNotes,
-              builder: (context, snapshot) {
-               switch (snapshot.connectionState) {
-                 case ConnectionState.waiting:
-                 case ConnectionState.active:
-                    return const Text('Waiting for all notes');
-                  default:
-                     return const CircularProgressIndicator();
-               } 
-              } );
-             default :
-              return const CircularProgressIndicator();
-         }
-      })
-    );
+        appBar: AppBar(
+          title: const Text('NoteScreen'),
+          actions: [
+            PopupMenuButton<MenuAction>(onSelected: (value) async {
+              switch (value) {
+                case MenuAction.logout:
+                  final shouldLogOut = await showLogOut(context);
+                  if (shouldLogOut) {
+                    AuthServices.firebase().logOut();
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil(signInRoute, (route) => false);
+                  }
+              }
+            }, itemBuilder: (context) {
+              return [
+                const PopupMenuItem(
+                  value: MenuAction.logout,
+                  child: Text('LogOut'),
+                )
+              ];
+            })
+          ],
+        ),
+        body: FutureBuilder(
+            future: _notesServices.getOrCreateUser(email: userEmail),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                  return StreamBuilder(
+                      stream: _notesServices.allNotes,
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.waiting:
+                          case ConnectionState.active:
+                            if (snapshot.hasData) {
+                              final allNotes =
+                                  snapshot.data as List<DatabaseNotes>;
+                              return ListView.builder(
+                                  itemCount: allNotes.length,
+                                  itemBuilder: (context, index) {
+                                    final note = allNotes[index];
+                                    return ListTile(
+                                      title: Text(
+                                        note.text,
+                                        maxLines: 1,
+                                        softWrap: true,
+                                        overflow: TextOverflow.ellipsis,
+                                        ),
+                                    );
+                                  });
+                            } else {
+                              return const CircularProgressIndicator();
+                            }
+                           default: return const CircularProgressIndicator(); 
+                        }
+                      });
+                default:
+                  return const CircularProgressIndicator();
+              }
+            }));
   }
 }
 
