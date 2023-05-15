@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_app/Utilities/error_dailog.dart';
+import 'package:flutter_firebase_app/Utilities/Dialog/error_dailog.dart';
 import 'package:flutter_firebase_app/constants/routes.dart';
 import 'package:flutter_firebase_app/screens/sign_in.dart';
 import 'package:flutter_firebase_app/services/auth/auth_exception.dart';
