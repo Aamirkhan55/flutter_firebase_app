@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_app/firebase_options.dart';
 import 'package:flutter_firebase_app/screens/notes_screen.dart';
 import 'package:flutter_firebase_app/screens/sign_up.dart';
 import 'package:flutter_firebase_app/screens/update_notes.dart';
@@ -8,6 +10,9 @@ import 'constants/routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
