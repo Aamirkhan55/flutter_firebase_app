@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_app/Utilities/Dialog/cannot_share_empty_notes_dailog.dart';
 import 'package:flutter_firebase_app/Utilities/generices/get_arguments.dart';
 import 'package:flutter_firebase_app/services/auth/auth_services.dart';
 import 'package:flutter_firebase_app/services/cloud/cloud_notes.dart';
 import 'package:flutter_firebase_app/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_firebase_app/services/crud/notes_services.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CreateUpdateNotes extends StatefulWidget {
   const CreateUpdateNotes({super.key});
@@ -13,13 +14,11 @@ class CreateUpdateNotes extends StatefulWidget {
 }
 
 class _CreateUpdateNotesState extends State<CreateUpdateNotes> {
-
   CloudNote? _note;
   late final FirebaseCloudStorage _notesServices;
   late final TextEditingController _textController;
 
-  Future<CloudNote> createOrGetExistingNote (BuildContext context) async{
- 
+  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
     final widgetNote = context.getArgument<CloudNote>();
 
     if (widgetNote != null) {
@@ -31,7 +30,7 @@ class _CreateUpdateNotesState extends State<CreateUpdateNotes> {
     final existingNote = _note;
     if (existingNote != null) {
       return existingNote;
-    } 
+    }
     final currentUser = AuthServices.firebase().currentUser!;
     final userId = currentUser.id;
     final newNote = await _notesServices.creatNewNote(ownerUserId: userId);
@@ -46,27 +45,27 @@ class _CreateUpdateNotesState extends State<CreateUpdateNotes> {
     }
   }
 
-  void _saveNoteIfTextNotEmpty() async{
+  void _saveNoteIfTextNotEmpty() async {
     final note = _note;
     final text = _textController.text;
     if (note != null && text.isNotEmpty) {
       await _notesServices.updateNotes(
-        documentId: note.documentId, 
+        documentId: note.documentId,
         text: text,
-        );
+      );
     }
   }
 
-  void _textControllerListener() async{
+  void _textControllerListener() async {
     final note = _note;
     if (note == null) {
       return;
-    } 
+    }
     final text = _textController.text;
     await _notesServices.updateNotes(
-      documentId: note.documentId, 
+      documentId: note.documentId,
       text: text,
-      );
+    );
   }
 
   void _setupTextControllerListener() {
@@ -91,28 +90,40 @@ class _CreateUpdateNotesState extends State<CreateUpdateNotes> {
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      appBar:   AppBar(
+    return Scaffold(
+      appBar: AppBar(
         title: const Text('New Notes'),
+        actions: [
+          IconButton(
+            onPressed: () async{
+              final text = _textController.text;
+              if (_note == null || text.isEmpty) {
+                await showCannotShareEmptyNotesDailog(context);
+              } else {
+                Share.share(text);
+              }
+            }, 
+            icon: const Icon(Icons.share),
+            ),
+        ],
       ),
       body: FutureBuilder(
-        future: createOrGetExistingNote(context),
-        builder: (context, snapshot){
-          switch (snapshot.connectionState) {
-           case ConnectionState.done:
-             _setupTextControllerListener();
-              return TextField(
-                controller: _textController,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                decoration: const InputDecoration(
-                  hintText: 'Start Yor Text Here....'
-                ),
-              );
-             default :
-               return const CircularProgressIndicator();
-          }
-         }),
+          future: createOrGetExistingNote(context),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                _setupTextControllerListener();
+                return TextField(
+                  controller: _textController,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  decoration: const InputDecoration(
+                      hintText: 'Start Yor Text Here....'),
+                );
+              default:
+                return const CircularProgressIndicator();
+            }
+          }),
     );
   }
 }
